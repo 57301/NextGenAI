@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NextGenAI | Learn CS with AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/framer-motion@10.12.0/dist/framer-motion.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/qrcode.min.js"></script>
+    <style>
+      body {
+        background: linear-gradient(to right, #0f0c29, #302b63, #24243e);
+        color: #e0e0e0;
+        overflow-x: hidden;
+        font-family: 'Arial', sans-serif;
+        transition: background 0.5s ease;
+      }
+      .dark-mode {
+        background: linear-gradient(90deg, #1cb5e0 0%, #000851 100%);
+        color: #f0f9ff;
+      }
+      .dark-mode header,
+      .dark-mode footer {
+        background-color: #1E293B !important;
+      }
+      .dark-mode section {
+        background-color: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(10px);
+      }
+      #three-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        opacity: 0.3;
+      }
+      .fade-in {
+        animation: fadeIn 0.8s ease-in-out both;
+      }
+      @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(20px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      .hover-scale {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .hover-scale:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+      }
+      .pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+      }
+      .slide-in-left {
+        animation: slideInLeft 0.5s ease-in-out;
+      }
+      @keyframes slideInLeft {
+        0% { transform: translateX(-100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+      }
+      .rotate-in {
+        animation: rotateIn 0.5s ease-in-out;
+      }
+      @keyframes rotateIn {
+        0% { transform: rotate(-10deg); opacity: 0; }
+        100% { transform: rotate(0); opacity: 1; }
+      }
+      .bounce {
+        animation: bounce 1s ease infinite;
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .neumorphic {
+        background: #e0e0e0;
+        border-radius: 15px;
+        box-shadow: 5px 5px 15px #d9d9d9, -5px -5px 15px #ffffff;
+      }
+      .gradient-text {
+        background: linear-gradient(45deg, #38BDF8, #8B5CF6);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        transition: background 0.5s ease;
+      }
+      .gradient-text:hover {
+        background: linear-gradient(45deg, #14B8A6, #F472B6);
+      }
+      .typing {
+        overflow: hidden;
+        white-space: nowrap;
+        border-right: 2px solid;
+        animation: typing 3s steps(40, end), blink 0.75s step-end infinite;
+      }
+      @keyframes typing {
+        from { width: 0; }
+        to { width: 100%; }
+      }
+      @keyframes blink {
+        50% { border-color: transparent; }
+      }
+      .shadow-glow {
+        box-shadow: 0 0 10px #14B8A6, 0 0 20px #F472B6;
+        transition: box-shadow 0.3s ease;
+      }
+      .shadow-glow:hover {
+        box-shadow: 0 0 20px #14B8A6, 0 0 30px #F472B6;
+      }
+      .border-animation {
+        border: 2px solid;
+        border-image: linear-gradient(45deg, #38BDF8, #8B5CF6) 1;
+        animation: borderAnimate 4s infinite linear;
+      }
+      @keyframes borderAnimate {
+        0% { border-image: linear-gradient(45deg, #38BDF8, #8B5CF6) 1; }
+        50% { border-image: linear-gradient(45deg, #14B8A6, #F472B6) 1; }
+        100% { border-image: linear-gradient(45deg, #38BDF8, #8B5CF6) 1; }
+      }
+      #certificate-content {
+        font-family: 'Arial', sans-serif;
+        text-align: center;
+        padding: 40px;
+        border: 10px double #F472B6;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+      }
+      #certificate-content h2 {
+        color: #0F172A;
+        font-size: 2.5em;
+        margin-bottom: 20px;
+      }
+      #certificate-content p {
+        color: #111827;
+        font-size: 1.2em;
+        margin: 10px 0;
+      }
+      #certificate-content .signature {
+        margin-top: 30px;
+        font-style: italic;
+        color: #555;
+      }
+      #certificate-content .qr-code {
+        margin-top: 20px;
+      }
+      #certificate-content .hover-effect:hover {
+        transform: scale(1.1);
+        transition: transform 0.3s ease;
+      }
+      .sticky-nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .hamburger {
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+      .hamburger.open {
+        transform: rotate(90deg);
+      }
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 40;
+      }
+      .overlay.open {
+        display: block;
+      }
+      .accordion {
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .accordion.open {
+        max-height: 500px;
+      }
+      .loader {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #38BDF8;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 20px auto;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      .particle-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+      }
+      .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(15, 23, 42, 0.9);
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        z-index: 60;
+        width: 90%;
+        max-width: 400px;
+        color: #e0e0e0;
+      }
+      .modal.open {
+        display: block;
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 50;
+      }
+      .modal-overlay.open {
+        display: block;
+      }
+      .progress-bar {
+        width: 100%;
+        height: 20px;
+        background: #1E293B;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .progress {
+        height: 100%;
+        background: linear-gradient(90deg, #38BDF8, #F472B6);
+        border-radius: 10px;
+        transition: width 1s ease-in-out;
+      }
+      .badge {
+        display: inline-block;
+        padding: 8px 16px;
+        margin: 5px;
+        border-radius: 20px;
+        background: #1E293B;
+        color: #38BDF8;
+        border: 2px solid #38BDF8;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .badge:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 10px #38BDF8;
+      }
+      .forum-post {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 5px;
+        border-left: 4px solid #38BDF8;
+      }
+      .forum-post .author {
+        font-weight: bold;
+        color: #F472B6;
+      }
+      .forum-post .time {
+        font-size: 0.8em;
+        color: #888;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen text-gray-200">
+    <canvas id="three-canvas" class="particle-background"></canvas>
+    <header class="bg-[#0F172A] text-white p-4 shadow-md sticky-nav border-animation">
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <h1 class="text-3xl font-bold gradient-text bounce">NextGenAI</h1>
+        <div class="flex items-center">
+          <button onclick="toggleDarkMode()" class="text-sm bg-[#38BDF8] text-[#0F172A] px-2 py-1 rounded shadow hover-scale pulse mr-4">🌗 Toggle Theme</button>
+          <div class="md:hidden">
+            <div class="hamburger" onclick="toggleSidebar()">
+              <span class="block w-6 h-1 bg-white mb-1 transition-transform"></span>
+              <span class="block w-6 h-1 bg-white mb-1 transition-transform"></span>
+              <span class="block w-6 h-1 bg-white transition-transform"></span>
+            </div>
+          </div>
+          <nav class="hidden md:inline-block space-x-4 text-lg font-medium">
+            <button onclick="showSection('home')" class="hover:text-[#14B8A6] transition hover-scale">Home</button>
+            <button onclick="showSection('modules')" class="hover:text-[#14B8A6] transition hover-scale">Modules</button>
+            <button onclick="showSection('certificate-section')" class="hover:text-[#14B8A6] transition hover-scale">Certificate</button>
+            <button onclick="showSection('about')" class="hover:text-[#14B8A6] transition hover-scale">About Us</button>
+            <button onclick="showSection('resources')" class="hover:text-[#14B8A6] transition hover-scale">Resources</button>
+            <button onclick="showSection('forum')" class="hover:text-[#14B8A6] transition hover-scale">Forum</button>
+          </nav>
+          <div class="flex space-x-4">
+            <button onclick="showModal('login')" class="bg-[#38BDF8] text-[#0F172A] px-3 py-1 rounded shadow hover:bg-[#14B8A6] transition hover-scale">Login</button>
+            <button onclick="showModal('signup')" class="bg-[#F472B6] text-white px-3 py-1 rounded shadow hover:bg-[#8B5CF6] transition hover-scale">Signup</button>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar" class="fixed top-0 left-0 w-64 bg-[#1E293B] h-full sidebar glass p-4 text-white z-50">
+        <button onclick="toggleSidebar()" class="text-white mb-4">Close</button>
+        <nav class="space-y-2">
+          <button onclick="showSection('home'); toggleSidebar();" class="block w-full text-left hover:text-[#14B8A6] transition hover-scale">Home</button>
+          <button onclick="showSection('modules'); toggleSidebar();" class="block w-full text-left hover:text-[#14B8A6] transition hover-scale">Modules</button>
+          <button onclick="showSection('certificate-section'); toggleSidebar();" class="block w-full text-left hover:text-[#14B8A6] transition hover-scale">Certificate</button>
+          <button onclick="showSection('about'); toggleSidebar();" class="block w-full text-left hover:text-[#14B8A6] transition hover-scale">About Us</button>
+          <button onclick="showSection('resources'); toggleSidebar();" class="block w-full text-left hover:text-[#14B8A6] transition hover-scale">Resources</button>
+          <button onclick="showSection('forum'); toggleSidebar();" class="block w-full text-left hover:text-[#14B8A6] transition hover-scale">Forum</button>
+        </nav>
+      </div>
+      <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+    </header>
+
+    <div id="login-modal" class="modal">
+      <button onclick="hideModal('login')" class="text-white float-right text-2xl">×</button>
+      <h2 class="text-2xl font-bold mb-4 text-[#38BDF8] gradient-text">Login</h2>
+      <form id="login-form">
+        <div class="mb-4">
+          <label for="login-email" class="block text-sm font-medium mb-2">Email</label>
+          <input type="email" id="login-email" class="w-full p-2 rounded bg-[#0F172A]/50 border border-[#38BDF8] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]" placeholder="Enter your email" required>
+        </div>
+        <div class="mb-4">
+          <label for="login-password" class="block text-sm font-medium mb-2">Password</label>
+          <input type="password" id="login-password" class="w-full p-2 rounded bg-[#0F172A]/50 border border-[#38BDF8] focus:outline-none focus:ring-2 focus:ring-[#14B8A6]" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="w-full bg-[#38BDF8] text-[#0F172A] px-4 py-2 rounded shadow hover:bg-[#14B8A6] transition hover-scale">Login</button>
+      </form>
+    </div>
+    <div id="login-modal-overlay" class="modal-overlay" onclick="hideModal('login')"></div>
+
+    <div id="signup-modal" class="modal">
+      <button onclick="hideModal('signup')" class="text-white float-right text-2xl">×</button>
+      <h2 class="text-2xl font-bold mb-4 text-[#F472B6] gradient-text">Signup</h2>
+      <form id="signup-form">
+        <div class="mb-4">
+          <label for="signup-name" class="block text-sm font-medium mb-2">Name</label>
+          <input type="text" id="signup-name" class="w-full p-2 rounded bg-[#0F172A]/50 border border-[#F472B6] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]" placeholder="Enter your name" required>
+        </div>
+        <div class="mb-4">
+          <label for="signup-email" class="block text-sm font-medium mb-2">Email</label>
+          <input type="email" id="signup-email" class="w-full p-2 rounded bg-[#0F172A]/50 border border-[#F472B6] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]" placeholder="Enter your email" required>
+        </div>
+        <div class="mb-4">
+          <label for="signup-password" class="block text-sm font-medium mb-2">Password</label>
+          <input type="password" id="signup-password" class="w-full p-2 rounded bg-[#0F172A]/50 border border-[#F472B6] focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]" placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="w-full bg-[#F472B6] text-white px-4 py-2 rounded shadow hover:bg-[#8B5CF6] transition hover-scale">Signup</button>
+      </form>
+    </div>
+    <div id="signup-modal-overlay" class="modal-overlay" onclick="hideModal('signup')"></div>
+
+    <section id="home" class="p-8 fade-in">
+      <div class="max-w-4xl mx-auto text-center glass shadow-glow" data-aos="fade-up">
+        <h2 class="text-4xl font-bold text-[#38BDF8] mb-4 typing">Welcome to NextGenAI</h2>
+        <p class="text-lg text-gray-200 mb-6">Empowering Computer Science students with interactive learning modules and personalized progress tracking to excel in their tech journey.</p>
+        <img src="C:\Users\NITYA\OneDrive\Desktop\ai.jpg" width="350" height="450" class="rounded-lg mx-auto shadow-lg hover-scale" alt="AI Technology" />
+        <div class="mt-8">
+          <h3 class="text-2xl font-semibold text-[#8B5CF6] gradient-text">Why Choose NextGenAI?</h3>
+          <p class="text-gray-200 mt-4">Our platform offers comprehensive CS curriculum with interactive lessons and certificate generation to showcase your achievements.</p>
+          <button onclick="showSection('modules')" class="mt-6 bg-[#F472B6] text-white px-6 py-2 rounded shadow hover:bg-[#14B8A6] transition pulse hover-scale">Explore Modules</button>
+          <div class="mt-6">
+            <h4 class="text-xl font-semibold text-[#38BDF8] gradient-text">Featured Module: Data Structures</h4>
+            <p class="text-gray-200 mt-2">Master the fundamentals of organizing and managing data with our interactive Data Structures module. Dive into arrays, trees, and more!</p>
+            <img src="C:\Users\NITYA\OneDrive\Desktop\ds.jpg" class="mt-2 rounded-lg mx-auto shadow-lg hover-scale w-64" alt="Data Structures" />
+            <button onclick="showSection('modules')" class="mt-4 bg-[#8B5CF6] text-white px-4 py-2 rounded shadow hover:bg-[#14B8A6] transition pulse hover-scale">Learn More</button>
+          </div>
+          <div class="mt-6 flex justify-center space-x-4">
+            <button onclick="showSection('modules')" class="bg-[#F472B6] text-white px-4 py-2 rounded shadow hover:bg-[#14B8A6] transition pulse hover-scale">Start Learning</button>
+            <button onclick="showSection('resources')" class="bg-[#14B8A6] text-white px-4 py-2 rounded shadow hover:bg-[#F472B6] transition pulse hover-scale">Explore Resources</button>
+          </div>
+        </div>
+        <div class="mt-10">
+          <h2 class="text-2xl font-semibold text-[#F472B6] gradient-text">Meet the Founder</h2>
+          <img src="C:\Users\NITYA\OneDrive\Desktop\founder.jpg" alt="Nitya Choudhary, Founder" class="w-32 h-32 rounded-full mx-auto shadow-lg mt-4 hover-scale">
+          <p class="text-lg text-gray-200 mt-4">Hi, I'm Nitya Choudhary, a B.Tech student in Information Technology at IGDTUW, Delhi. As a machine learning enthusiast and future software engineer, I founded NextGenAI to make tech education accessible with interactive tools.</p>
+          <p class="text-gray-200 mt-2">With experience in web development and research, I’m passionate about bridging complex CS concepts with learners worldwide. Connect with me on <a href="https://www.linkedin.com/in/nitya-choudhary-34b330321/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">LinkedIn</a>!</p>
+        </div>
+        <div class="mt-10">
+          <h3 class="text-2xl font-semibold text-[#8B5CF6] gradient-text">Trending AI News</h3>
+          <p class="text-lg text-gray-200 mt-4">Stay updated with the latest breakthroughs in artificial intelligence shaping the future of technology:</p>
+          <ul class="list-disc list-inside text-gray-200 mt-4 text-lg">
+            <li>xAI is in talks for a funding round that could value the company at up to $200 billion, reflecting growing investor interest in AI innovation.</li>
+            <li>Meta has acquired PlayAI to bolster its conversational AI capabilities, enhancing products like Ray-Ban Meta smart glasses.</li>
+            <li>The U.S. Senate rejected a 10-year AI regulation moratorium, paving the way for state-level innovation while sparking debates on oversight.</li>
+            <li>Google is rolling out Veo 3 globally, advancing AI-driven video generation for creative applications.</li>
+          </ul>
+          <p class="text-gray-200 mt-4">Explore these trends and more with our learning tools to stay ahead in the tech world!</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="modules" class="p-8 hidden fade-in">
+      <div class="max-w-6xl mx-auto glass shadow-glow" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-[#38BDF8] mb-6 typing">CS Learning Modules</h2>
+        <p class="text-center text-gray-200 mb-8">Dive into our carefully curated modules designed to build a strong foundation in Computer Science. Each module includes interactive quizzes, coding challenges, and links to top online resources.</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md hover:shadow-xl transition hover-scale border-animation" data-aos="fade-right">
+            <h3 class="text-xl font-semibold text-[#38BDF8] mb-2 gradient-text">Data Structures</h3>
+            <p class="text-sm text-gray-200 mb-4">Master the building blocks of efficient programming with hands-on lessons on organizing and managing data.</p>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><strong>Arrays</strong>: Store and access sequential data efficiently. Used in web development for lists and data processing.</li>
+              <li><strong>Linked Lists</strong>: Dynamic data structures for flexible data management, ideal for implementing stacks and queues.</li>
+              <li><strong>Stacks and Queues</strong>: Manage data in LIFO (Last In, First Out) or FIFO (First In, First Out) order, used in event handling and task scheduling.</li>
+              <li><strong>Trees</strong>: Hierarchical structures like binary trees, used in DOM manipulation and database indexing.</li>
+              <li><strong>Graphs</strong>: Model relationships, used in social networks and navigation systems.</li>
+              <li><strong>Hash Tables</strong>: Enable fast data retrieval, critical for caching and database queries.</li>
+              <li><strong>Tries</strong>: Optimize prefix-based searches, used in autocomplete features.</li>
+            </ul>
+            <h4 class="text-lg font-semibold text-[#38BDF8] mb-2 gradient-text">Online Resources</h4>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><a href="https://www.freecodecamp.org/news/learn-data-structures-and-algorithms/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">freeCodeCamp: Learn Data Structures and Algorithms</a> - Comprehensive guide with practical examples.</li>
+              <li><a href="https://www.geeksforgeeks.org/data-structures/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">GeeksforGeeks: Data Structures</a> - Detailed tutorials and practice problems.</li>
+              <li><a href="https://www.programiz.com/dsa" class="text-[#F472B6] hover:underline hover-scale" target="_blank">Programiz: Data Structures</a> - Step-by-step tutorials with code examples.</li>
+              <li><a href="https://www.youtube.com/c/takeUforward" class="text-[#F472B6] hover:underline hover-scale" target="_blank">takeUforward YouTube</a> - Video tutorials by a Google engineer.</li>
+            </ul>
+          </div>
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md hover:shadow-xl transition hover-scale border-animation" data-aos="fade-left" data-aos-delay="100">
+            <h3 class="text-xl font-semibold text-[#38BDF8] mb-2 gradient-text">Algorithms</h3>
+            <p class="text-sm text-gray-200 mb-4">Learn problem-solving techniques with step-by-step algorithm breakdowns for efficient computation.</p>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><strong>Sorting</strong>: Arrange data efficiently with algorithms like Bubble Sort, Merge Sort, and Quick Sort.</li>
+              <li><strong>Searching</strong>: Find data quickly using Binary Search, Linear Search, or Jump Search.</li>
+              <li><strong>Greedy Algorithms</strong>: Optimize solutions by making locally optimal choices, used in scheduling.</li>
+              <li><strong>Dynamic Programming</strong>: Solve complex problems by breaking them into overlapping subproblems, e.g., Fibonacci sequence.</li>
+              <li><strong>Backtracking</strong>: Explore all possibilities to solve problems like N-Queens or Sudoku.</li>
+              <li><strong>Graph Algorithms</strong>: Find shortest paths (Dijkstra’s) or traverse networks (DFS, BFS).</li>
+              <li><strong>Divide and Conquer</strong>: Break problems into smaller subproblems, e.g., Merge Sort.</li>
+            </ul>
+            <h4 class="text-lg font-semibold text-[#38BDF8] mb-2 gradient-text">Online Resources</h4>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><a href="https://www.coursera.org/specializations/data-structures-algorithms" class="text-[#F472B6] hover:underline hover-scale" target="_blank">Coursera: Data Structures and Algorithms</a> - UC San Diego specialization with real-world projects.</li>
+              <li><a href="https://www.classcentral.com/report/best-data-structures-algorithms-courses/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">Class Central: Best DSA Courses</a> - Curated list of top courses.</li>
+              <li><a href="https://www.youtube.com/c/NeetCode" class="text-[#F472B6] hover:underline hover-scale" target="_blank">NeetCode YouTube</a> - Problem-solving videos for LeetCode challenges.</li>
+              <li><a href="https://www.interviewbit.com/courses/programming/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">Interviewbit: DSA Course</a> - Practice for coding interviews.</li>
+            </ul>
+          </div>
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md hover:shadow-xl transition hover-scale border-animation" data-aos="fade-right" data-aos-delay="200">
+            <h3 class="text-xl font-semibold text-[#38BDF8] mb-2 gradient-text">Machine Learning</h3>
+            <p class="text-sm text-gray-200 mb-4">Explore AI with practical projects and tutorials on building intelligent systems.</p>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><strong>Supervised Learning</strong>: Predict outcomes using labeled data, e.g., Linear Regression, SVM.</li>
+              <li><strong>Unsupervised Learning</strong>: Find patterns in unlabeled data, e.g., Clustering, PCA.</li>
+              <li><strong>Neural Networks</strong>: Build models mimicking human brain for tasks like image recognition.</li>
+              <li><strong>Deep Learning</strong>: Advanced neural networks for complex tasks like NLP and computer vision.</li>
+              <li><strong>Reinforcement Learning</strong>: Train agents to make decisions, used in robotics and gaming.</li>
+              <li><strong>Data Preprocessing</strong>: Clean and prepare data for ML models, critical for performance.</li>
+              <li><strong>Recommendation Systems</strong>: Build systems like Netflix’s using collaborative filtering.</li>
+            </ul>
+            <h4 class="text-lg font-semibold text-[#38BDF8] mb-2 gradient-text">Online Resources</h4>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><a href="https://www.coursera.org/learn/machine-learning" class="text-[#F472B6] hover:underline hover-scale" target="_blank">Coursera: Machine Learning by Andrew Ng</a> - Foundational ML course.</li>
+              <li><a href="https://www.geeksforgeeks.org/machine-learning/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">GeeksforGeeks: Machine Learning</a> - Tutorials on ML concepts.</li>
+              <li><a href="https://www.oreilly.com/library/view/data-structures-algorithms/9780137460403/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">O’Reilly: DSA and ML Optimization</a> - Video course on ML and DSA.</li>
+              <li><a href="https://www.youtube.com/c/JovianHQ" class="text-[#F472B6] hover:underline hover-scale" target="_blank">Jovian: Python for ML</a> - Free ML tutorials with Python.</li>
+            </ul>
+          </div>
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md hover:shadow-xl transition hover-scale border-animation" data-aos="fade-left" data-aos-delay="300">
+            <h3 class="text-xl font-semibold text-[#38BDF8] mb-2 gradient-text">Web Development</h3>
+            <p class="text-sm text-gray-200 mb-4">Build modern web applications with our comprehensive web dev track.</p>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><strong>HTML/CSS</strong>: Structure and style web pages for responsive design.</li>
+              <li><strong>JavaScript</strong>: Add interactivity, manipulate DOM, and handle events.</li>
+              <li><strong>Frameworks</strong>: Use React, Vue.js, or Angular for efficient front-end development.</li>
+              <li><strong>Node.js</strong>: Build scalable back-end systems with JavaScript.</li>
+              <li><strong>MongoDB</strong>: Manage NoSQL databases for flexible data storage.</li>
+              <li><strong>REST APIs</strong>: Create and consume APIs for seamless data exchange.</li>
+              <li><strong>Caching</strong>: Optimize performance with in-memory data structures.</li>
+            </ul>
+            <h4 class="text-lg font-semibold text-[#38BDF8] mb-2 gradient-text">Online Resources</h4>
+            <ul class="list-disc list-inside text-sm text-gray-200 mb-4">
+              <li><a href="https://www.w3schools.com/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">W3Schools: Web Development</a> - Tutorials on HTML, CSS, JS, and more.</li>
+              <li><a href="https://www.freecodecamp.org/learn" class="text-[#F472B6] hover:underline hover-scale" target="_blank">freeCodeCamp: Web Development</a> - Full-stack development certification.</li>
+              <li><a href="https://developer.mozilla.org/en-US/docs/Learn" class="text-[#F472B6] hover:underline hover-scale" target="_blank">MDN Web Docs</a> - Comprehensive web dev guides.</li>
+              <li><a href="https://www.theodinproject.com/" class="text-[#F472B6] hover:underline hover-scale" target="_blank">The Odin Project</a> - Project-based web dev curriculum.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="certificate-section" class="p-8 hidden fade-in">
+      <div class="max-w-4xl mx-auto text-center glass shadow-glow" data-aos="fade-left">
+        <h2 class="text-3xl font-bold text-[#38BDF8] mb-6 typing">Generate Your Certificate</h2>
+        <p class="text-lg text-gray-200 mb-6">Celebrate your achievements with a personalized certificate of completion. Enter your name below to generate your certificate and download it as a PDF to share your success!</p>
+        <div class="mb-6">
+          <input id="certificate-name" type="text" class="w-full max-w-md p-4 rounded-lg shadow border border-[#38BDF8] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] bg-[#0F172A]/50" placeholder="Enter your full name">
+          <button onclick="generateCertificate()" class="mt-4 bg-[#F472B6] text-white px-6 py-2 rounded shadow hover:bg-[#14B8A6] transition pulse hover-scale">Generate Certificate</button>
+        </div>
+        <div id="certificate" class="mt-6"></div>
+        <div class="loader hidden" id="certificate-loader"></div>
+      </div>
+    </section>
+
+    <section id="about" class="p-8 hidden fade-in">
+      <div class="max-w-3xl mx-auto text-center glass shadow-glow" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-[#8B5CF6] mb-4 typing">About the Founder</h2>
+        <img src="C:\Users\NITYA\OneDrive\Desktop\founder.jpg" alt="Nitya Choudhary, Founder" class="w-40 h-40 rounded-full mx-auto shadow-lg mt-4 hover-scale">
+        <p class="text-lg text-gray-200">Hi, I'm <strong>Nitya Choudhary</strong>, a B.Tech student in Information Technology at IGDTUW, Delhi. As a former research intern at ACM IGDTUW, a machine learning enthusiast, and a future software engineer, I'm passionate about creating tools that make tech learning accessible and engaging for everyone.</p>
+        <p class="text-lg text-gray-200 mt-4">NextGenAI was born from my vision to empower students with interactive education, combining hands-on learning with cutting-edge technology to shape the future of CS education.</p>
+        <div class="mt-6">
+          <h3 class="text-xl font-semibold text-[#F472B6] gradient-text">My Journey</h3>
+          <p class="text-gray-200 mt-4">With a background in machine learning research and hands-on experience in web development, I’ve worked on projects ranging from predictive modeling to building interactive platforms. My goal with NextGenAI is to bridge the gap between complex CS concepts and learners worldwide, using technology to enhance the learning experience.</p>
+          <p class="text-gray-200 mt-4">When I'm not coding or studying, you can find me exploring new tech trends, mentoring aspiring developers, or sharing my knowledge through workshops and talks.</p>
+        </div>
+        <div class="mt-6">
+          <h3 class="text-xl font-semibold text-[#F472B6] gradient-text">Contact Me</h3>
+          <p class="text-gray-200 mt-4">
+            <a href="https://www.linkedin.com/in/nitya-choudhary-34b330321/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">LinkedIn</a> |
+            <a href="https://github.com/57301" target="_blank" class="text-[#F472B6] hover:underline hover-scale">GitHub</a> |
+            <a href="mailto:nityapunia141@gmail.com" class="text-[#F472B6] hover:underline hover-scale">Email</a>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="resources" class="p-8 hidden fade-in">
+      <div class="max-w-6xl mx-auto glass shadow-glow" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-[#38BDF8] mb-6 typing">Resources Hub</h2>
+        <p class="text-lg text-gray-200 mb-6">Explore a curated collection of Data Structures and Algorithms (DSA) sheets, system design resources, and video tutorials to enhance your learning. Mark your progress as you go!</p>
+        <div class="space-y-6">
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md border-animation">
+            <h3 class="text-xl font-semibold text-[#38BDF8] gradient-text mb-4">DSA Sheets & Resources</h3>
+            <ul class="space-y-4">
+              <li class="flex items-center justify-between">
+                <a href="https://takeuforward.org/strivers-a2z-dsa-course/strivers-a2z-dsa-course-sheet/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">Take U Forward DSA Sheet</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('takeuforward')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://www.geeksforgeeks.org/system-design-tutorial/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">System Design</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('systemdesign')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://neetcode.io/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">NeetCode</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('neetcode')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://450dsa.com/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">Love Babbar DSA Sheet</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('lovebabbar')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://www.techdose.in/" target="_blank" class="text-[#F472B6] hover:underline hover-scale">Fraz DSA Sheet</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('fraz')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://github.com/GFGSC-RTU/All-DSA-Sheets" target="_blank" class="text-[#F472B6] hover:underline hover-scale">All DSA Sheets</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('alldsa')">
+              </li>
+            </ul>
+          </div>
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md border-animation">
+            <h3 class="text-xl font-semibold text-[#38BDF8] gradient-text mb-4">Video Tutorials</h3>
+            <ul class="space-y-4">
+              <li class="flex items-center justify-between">
+                <a href="https://www.youtube.com/c/takeUforward" target="_blank" class="text-[#F472B6] hover:underline hover-scale">Take U Forward YouTube</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('takeuvideo')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://www.youtube.com/c/NeetCode" target="_blank" class="text-[#F472B6] hover:underline hover-scale">NeetCode YouTube</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('neetcodevideo')">
+              </li>
+              <li class="flex items-center justify-between">
+                <a href="https://www.youtube.com/@techdose" target="_blank" class="text-[#F472B6] hover:underline hover-scale">TechDose YouTube</a>
+                <input type="checkbox" class="ml-4 h-5 w-5 text-[#38BDF8] accent-[#38BDF8]" onchange="updateProgress('techdosevideo')">
+              </li>
+            </ul>
+          </div>
+          <div class="bg-[#0F172A]/50 p-6 rounded-lg shadow-md border-animation text-center">
+            <h3 class="text-xl font-semibold text-[#38BDF8] gradient-text mb-4">Progress Tracking</h3>
+            <p id="progress-display" class="text-lg text-gray-200">Completed: 0% (0/8 items)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="forum" class="p-8 hidden fade-in">
+      <div class="max-w-6xl mx-auto glass shadow-glow" data-aos="fade-up">
+        <h2 class="text-3xl font-bold text-[#38BDF8] mb-6 typing">Community Forum</h2>
+        <p class="text-lg text-gray-200 mb-6">Share tips, ask questions, and showcase your projects to connect with the NextGenAI community!</p>
+        <div class="mb-6">
+          <input id="forum-post-content" type="text" class="w-full p-4 rounded-lg shadow border border-[#38BDF8] focus:outline-none focus:ring-2 focus:ring-[#14B8A6] bg-[#0F172A]/50" placeholder="Write your post...">
+          <button onclick="addForumPost()" class="mt-4 bg-[#F472B6] text-white px-6 py-2 rounded shadow hover:bg-[#14B8A6] transition pulse hover-scale">Post</button>
+        </div>
+        <div id="forum-posts" class="space-y-4"></div>
+      </div>
+    </section>
+
+    <button id="back-to-top" class="fixed bottom-4 right-4 bg-[#F472B6] text-white px-4 py-2 rounded-full shadow-lg hidden hover:bg-[#14B8A6] transition slide-in-left bounce" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑ Back to Top</button>
+
+    <footer class="bg-[#0F172A] text-white text-center py-4 mt-8 border-animation">
+      © 2025 NextGenAI. All rights reserved.
+    </footer>
+
+    <script>
+      function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        initThreeJS();
+      }
+
+      function showSection(id) {
+        document.querySelectorAll("section").forEach(s => s.classList.add("hidden"));
+        document.getElementById(id).classList.remove("hidden");
+        if (id !== 'home') toggleSidebar();
+      }
+
+      function generateCertificate() {
+        const loader = document.getElementById("certificate-loader");
+        loader.classList.remove("hidden");
+        const name = document.getElementById("certificate-name").value || localStorage.getItem("username") || "Your Name";
+        const date = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+        localStorage.setItem("username", name);
+        const certificateId = `NGAI-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+        const progress = JSON.parse(localStorage.getItem('progress')) || {};
+        const totalItems = 8;
+        const completedItems = Object.values(progress).filter(Boolean).length;
+        const completionPercentage = Math.round((completedItems / totalItems) * 100);
+
+        setTimeout(() => {
+          let certificateHtml = `
+            <div id="certificate-content" class="max-w-2xl mx-auto">
+              <h2 class="text-3xl font-bold text-[#0F172A] mb-4">🎉 Certificate of Achievement</h2>
+              <p class="text-xl text-[#111827] mb-4">This certifies that <strong>${name}</strong> has successfully completed their Computer Science learning journey with NextGenAI on <strong>${date}</strong>.</p>
+              <p class="text-lg text-[#111827] mb-4">With dedication and effort, ${name} has mastered key areas including Data Structures, Algorithms, Machine Learning, and Web Development.</p>
+              <p class="text-md text-gray-600 mb-4">Certificate ID: ${certificateId}</p>
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold text-[#38BDF8] gradient-text">Completion Progress</h3>
+                <div class="progress-bar">
+                  <div class="progress" style="width: ${completionPercentage}%;"></div>
+                </div>
+                <p class="text-sm text-gray-600 mt-2">Progress: ${completionPercentage}%</p>
+              </div>
+              <div class="mb-6">
+                <h3 class="text-lg font-semibold text-[#F472B6] gradient-text">Skill Badges</h3>
+                <div class="flex flex-wrap justify-center">
+                  ${completedItems >= 2 ? '<span class="badge">Data Structures</span>' : ''}
+                  ${completedItems >= 4 ? '<span class="badge">Algorithms</span>' : ''}
+                  ${completedItems >= 6 ? '<span class="badge">Machine Learning</span>' : ''}
+                  ${completedItems >= 8 ? '<span class="badge">Web Development</span>' : ''}
+                </div>
+              </div>
+              <div class="signature mt-6">Signed, <br> Nitya Choudhary <br> Founder, NextGenAI <br> <hr class="w-1/3 mx-auto my-2 border-gray-500"></div>
+              <div class="qr-code mt-4">
+                <div id="qrcode"></div>
+              </div>
+            </div>
+            <button onclick="downloadCertificate()" class="mt-6 bg-[#38BDF8] text-white px-6 py-2 rounded shadow hover:bg-[#8B5CF6] transition hover-effect pulse">Download Certificate as PDF</button>
+          `;
+          document.getElementById("certificate").innerHTML = certificateHtml;
+          loader.classList.add("hidden");
+          showSection('certificate-section');
+
+          new QRCode(document.getElementById("qrcode"), {
+            text: "https://nextgenai.com",
+            width: 100,
+            height: 100,
+            colorDark: "#2a2a72",
+            colorLight: "#ffffff",
+          });
+        }, 2000);
+      }
+
+      function downloadCertificate() {
+        const { jsPDF } = window.jspdf;
+        const certificateElement = document.getElementById("certificate-content");
+        html2canvas(certificateElement, { scale: 2, useCORS: true }).then(canvas => {
+          const imgData = canvas.toDataURL('image/png');
+          const pdf = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+          });
+          const imgWidth = 190;
+          const pageHeight = 297;
+          const imgHeight = canvas.height * imgWidth / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 10;
+
+          pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+          pdf.save(`NextGenAI_Certificate_${new Date().toISOString().split('T')[0]}.pdf`);
+        });
+      }
+
+      function initThreeJS() {
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('three-canvas'), alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+        const particles = new THREE.BufferGeometry();
+        const positions = [];
+        const count = 500;
+
+        for (let i = 0; i < count; i++) {
+          const x = (Math.random() - 0.5) * 50;
+          const y = (Math.random() - 0.5) * 50;
+          const z = (Math.random() - 0.5) * 50;
+          positions.push(x, y, z);
+        }
+
+        particles.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+        const particleMaterial = new THREE.PointsMaterial({ color: 0x38BDF8, size: 0.1 });
+        const particleSystem = new THREE.Points(particles, particleMaterial);
+        scene.add(particleSystem);
+
+        camera.position.z = 5;
+
+        function animate() {
+          requestAnimationFrame(animate);
+          particleSystem.rotation.y += 0.001;
+          renderer.render(scene, camera);
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+        });
+      }
+
+      function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const hamburger = document.querySelector('.hamburger');
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('open');
+        hamburger.classList.toggle('open');
+      }
+
+      function updateProgress(item) {
+        let progress = JSON.parse(localStorage.getItem('progress')) || {};
+        progress[item] = document.querySelector(`input[onchange="updateProgress('${item}')"]`).checked;
+        localStorage.setItem('progress', JSON.stringify(progress));
+        calculateProgress();
+      }
+
+      function calculateProgress() {
+        const progress = JSON.parse(localStorage.getItem('progress')) || {};
+        const totalItems = 8; // takeuforward, systemdesign, neetcode, lovebabbar, fraz, alldsa, takeuvideo, neetcodevideo
+        const completedItems = Object.values(progress).filter(Boolean).length;
+        const percentage = Math.round((completedItems / totalItems) * 100);
+        document.getElementById('progress-display').textContent = `Completed: ${percentage}% (${completedItems}/${totalItems} items)`;
+      }
+
+      function showModal(type) {
+        const modal = document.getElementById(`${type}-modal`);
+        const overlay = document.getElementById(`${type}-modal-overlay`);
+        modal.classList.add('open');
+        overlay.classList.add('open');
+      }
+
+      function hideModal(type) {
+        const modal = document.getElementById(`${type}-modal`);
+        const overlay = document.getElementById(`${type}-modal-overlay`);
+        modal.classList.remove('open');
+        overlay.classList.remove('open');
+      }
+
+      document.getElementById('login-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-password').value;
+        alert(`Login attempted with Email: ${email} and Password: ${password}`);
+        hideModal('login');
+      });
+
+      document.getElementById('signup-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('signup-name').value;
+        const email = document.getElementById('signup-email').value;
+        const password = document.getElementById('signup-password').value;
+        alert(`Signup attempted with Name: ${name}, Email: ${email}, and Password: ${password}`);
+        hideModal('signup');
+      });
+
+      function addForumPost() {
+        const content = document.getElementById('forum-post-content').value.trim();
+        if (content) {
+          const username = localStorage.getItem('username') || 'Anonymous';
+          const timestamp = new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+          const post = {
+            content,
+            author: username,
+            time: timestamp
+          };
+          let posts = JSON.parse(localStorage.getItem('forumPosts')) || [];
+          posts.push(post);
+          localStorage.setItem('forumPosts', JSON.stringify(posts));
+          document.getElementById('forum-post-content').value = '';
+          renderForumPosts();
+        }
+      }
+
+      function renderForumPosts() {
+        const posts = JSON.parse(localStorage.getItem('forumPosts')) || [];
+        const forumPostsDiv = document.getElementById('forum-posts');
+        forumPostsDiv.innerHTML = posts.map(post => `
+          <div class="forum-post">
+            <p class="author">${post.author}</p>
+            <p class="time">${post.time}</p>
+            <p>${post.content}</p>
+          </div>
+        `).join('');
+      }
+
+      window.onload = () => {
+        AOS.init({
+          duration: 800,
+          easing: 'ease-in-out',
+          once: false
+        });
+        showSection('home');
+        const backToTop = document.getElementById("back-to-top");
+        window.onscroll = function () {
+          backToTop.style.display = window.scrollY > 200 ? "block" : "none";
+        };
+
+        const lastVisit = localStorage.getItem("lastVisit");
+        if (lastVisit) {
+          const pd = document.getElementById("progress-data");
+          if (pd) pd.textContent = `Welcome back! Last activity: ${lastVisit}`;
+        }
+
+        initThreeJS();
+        calculateProgress();
+        renderForumPosts();
+      };
+    </script>
+  </body>
+</html>
